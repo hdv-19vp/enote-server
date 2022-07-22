@@ -1,4 +1,4 @@
-package socket;
+package group_02.server.socket;
 
 import java.io.*;
 import java.net.Socket;
