@@ -8,6 +8,11 @@ import java.util.ArrayList;
 public class DB {
     public static Connection conn = null;
 
+    /**
+     *
+     * @param DB_URL
+     * @return Connection
+     */
     public static Connection connectDB(String DB_URL) {
         try {
             conn = DriverManager.getConnection(DB_URL);
@@ -85,6 +90,11 @@ public class DB {
         return result;
     }
 
+    /**
+     *
+     * @param username
+     * @return ArrayList<Enote>
+     */
     public static ArrayList<Enote> getEnoteList(String username) {
         ArrayList<Enote> noteList = new ArrayList<>();
         try (CallableStatement cstmt = conn.prepareCall("select * from Enote where username = ?");) {
@@ -110,6 +120,12 @@ public class DB {
         return noteList;
     }
 
+    /**
+     *
+     * @param username
+     * @param noteID
+     * @return Enote
+     */
     public static Enote getEnote(String username, Integer noteID) {
         Enote enote = null;
         try (PreparedStatement ps = conn.prepareCall("select * from Enote where username = ? and id_note = ?")) {

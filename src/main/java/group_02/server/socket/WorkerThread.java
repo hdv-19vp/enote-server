@@ -2,6 +2,7 @@ package group_02.server.socket;
 
 import group_02.server.db.DB;
 import group_02.server.models.Enote;
+import org.apache.commons.io.*;
 
 import java.io.*;
 import java.net.Socket;
@@ -20,6 +21,8 @@ public class WorkerThread extends Thread {
         this.socket = socket;
     }
 
+
+
     public void run() {
         System.out.println("Processing: " + socket);
         try {
@@ -30,9 +33,14 @@ public class WorkerThread extends Thread {
                 String flag = dis.readUTF();
                 String username;
                 String pass;
+                String filename;
                 File file;
                 byte[] bytes;
                 int noteId;
+                Enote note;
+                String absPath = "D:\\MMT\\file\\";
+
+
                 switch (flag) {
                     case "signIn":
                         username = dis.readUTF();
@@ -69,6 +77,16 @@ public class WorkerThread extends Thread {
                             bytes = new byte[(int) file.length()];
                             dos.write(bytes);
                         }
+                        break;
+                    case "uploadNote":
+                        username = dis.readUTF();
+                        filename = dis.readUTF();
+                        bytes = dis.readAllBytes();
+
+                        FileUtils.writeByteArrayToFile(new File(absPath+filename), bytes);
+
+                        saveEnote(new Enote(username,absPath+filename,filename.substring(filename.indexOf(".")+1).trim()));
+
                         break;
 
                 }
