@@ -8,6 +8,16 @@ public class Enote {
     String filePath;
     String fileType;
 
+    public byte[] getBuffer() {
+        return buffer;
+    }
+
+    public void setBuffer(byte[] buffer) {
+        this.buffer = buffer;
+    }
+
+    byte[] buffer = null;
+
     public Enote(int id, String username, String filePath, String fileType) {
         this.id = id;
         this.username = username;

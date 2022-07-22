@@ -1,7 +1,14 @@
 package group_02.server.socket;
 
+import group_02.server.db.DB;
+import group_02.server.models.Enote;
+
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.ListIterator;
+
+import static group_02.server.db.DB.*;
 
 public class WorkerThread extends Thread {
     private Socket socket;
@@ -19,28 +26,51 @@ public class WorkerThread extends Thread {
             dis = new DataInputStream(socket.getInputStream());
             dos = new DataOutputStream(socket.getOutputStream());
 
-            while(!socket.isClosed()){
+            while (!socket.isClosed()) {
                 String flag = dis.readUTF();
-
+                String username;
+                String pass;
+                File file;
+                byte[] bytes;
+                int noteId;
                 switch (flag) {
                     case "signIn":
-                        String username = dis.readUTF();
-                        String pass = dis.readUTF();
-                        if(username.equals("phantuongvy") && pass.equals("123456")) {
-                            dos.writeUTF("thanh cong");
-                        } else {
-                            dos.writeUTF("that bai");
-                        }
+                        username = dis.readUTF();
+                        pass = dis.readUTF();
+
+                        dos.writeUTF(signIn(username,pass));
+
                         break;
+
+
                     case "signUp":
-                        String user = dis.readUTF();
-                        String pwd = dis.readUTF();
-                        if(user.equals("phantuongvy") && pwd.equals("123456")) {
-                            dos.writeUTF("thanh cong");
-                        } else {
-                            dos.writeUTF("that bai");
+                        username = dis.readUTF();
+                        pass = dis.readUTF();
+
+                        dos.writeUTF(signUp(username,pass));
+
+                        break;
+
+                    case "getNote":
+                        username = dis.readUTF();
+                        noteId = dis.readInt();
+                        file = new File(DB.getEnote(username, noteId).getFilePath());
+                        bytes = new byte[(int) file.length()];
+                        dos.write(bytes);
+                        break;
+
+                    case "getNoteList":
+                        username = dis.readUTF();
+                        ArrayList<Enote> list = getEnoteList(username);
+                        ListIterator<Enote> iterate = list.listIterator();
+
+                        while(iterate.hasNext()){
+                            file = new File(DB.getEnote(username, iterate.next().getId()).getFilePath());
+                            bytes = new byte[(int) file.length()];
+                            dos.write(bytes);
                         }
                         break;
+
                 }
             }
         } catch (IOException e) {
