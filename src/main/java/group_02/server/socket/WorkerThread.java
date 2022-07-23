@@ -1,7 +1,16 @@
 package group_02.server.socket;
 
+import group_02.server.db.DB;
+import group_02.server.models.Enote;
+import org.apache.commons.io.*;
+
 import java.io.*;
 import java.net.Socket;
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.ListIterator;
+
+import static group_02.server.db.DB.*;
 
 public class WorkerThread extends Thread {
     private Socket socket;
@@ -13,34 +22,88 @@ public class WorkerThread extends Thread {
         this.socket = socket;
     }
 
+
+
     public void run() {
         System.out.println("Processing: " + socket);
         try {
             dis = new DataInputStream(socket.getInputStream());
             dos = new DataOutputStream(socket.getOutputStream());
 
-            while(!socket.isClosed()){
+            while (!socket.isClosed()) {
                 String flag = dis.readUTF();
+                String username;
+                String pass;
+                String filename;
+                File file;
+                byte[] bytes;
+                int noteId;
+                String absPath = "D:\\MMT\\file\\";
 
+                String url = "jdbc:sqlserver://localhost:1433;databaseName=Enote;user=sa;password=1;trustServerCertificate=true";
+                Connection conn = connectDB(url);
                 switch (flag) {
                     case "signIn":
-                        String username = dis.readUTF();
-                        String pass = dis.readUTF();
-                        if(username.equals("phantuongvy") && pass.equals("123456")) {
-                            dos.writeUTF("thanh cong");
-                        } else {
-                            dos.writeUTF("that bai");
-                        }
+                        username = dis.readUTF();
+                        pass = dis.readUTF();
+
+                        dos.writeUTF(signIn(username,pass));
+
                         break;
+
+
                     case "signUp":
-                        String user = dis.readUTF();
-                        String pwd = dis.readUTF();
-                        if(user.equals("phantuongvy") && pwd.equals("123456")) {
-                            dos.writeUTF("thanh cong");
-                        } else {
-                            dos.writeUTF("that bai");
-                        }
+                        username = dis.readUTF();
+                        pass = dis.readUTF();
+
+                        dos.writeUTF(signUp(username,pass));
+
                         break;
+
+                    case "getNote":
+                        username = dis.readUTF();
+                        noteId = dis.readInt();
+                        file = new File(DB.getEnote(username, noteId).getFilePath());
+                        bytes = new byte[(int) file.length()];
+                        dos.write(bytes);
+                        break;
+
+                    case "getNoteList":
+                        username = dis.readUTF();
+                        ArrayList<Enote> list = getEnoteList(username);
+                        ListIterator<Enote> iterate = list.listIterator();
+
+                        dos.writeInt(list.size());
+
+                        while(iterate.hasNext()){
+                            Enote temp = iterate.next();
+                            dos.writeUTF(temp.getUsername());
+                            dos.writeInt(temp.getId());
+                            dos.writeUTF(temp.getFilePath());
+                            dos.writeUTF(temp.getFileType());
+                        }
+
+
+                        //dos.writeUTF("success");
+                        break;
+                    case "saveNote":
+                        username = dis.readUTF();
+                        filename = dis.readUTF();
+                        bytes = null;
+                        int length = dis.readInt();
+                        if(length > 0) {
+                            bytes = new byte[length];
+                            dis.readFully(bytes);
+                        }
+
+                        FileUtils.writeByteArrayToFile(new File(absPath+filename), bytes);
+
+
+                        saveEnote(new Enote(username,absPath+filename,filename.substring(filename.indexOf(".")+1).trim()));
+
+                        dos.writeUTF("success");
+                        break;
+
                 }
             }
         } catch (IOException e) {

@@ -8,6 +8,11 @@ import java.util.ArrayList;
 public class DB {
     public static Connection conn = null;
 
+    /**
+     *
+     * @param DB_URL
+     * @return Connection
+     */
     public static Connection connectDB(String DB_URL) {
         try {
             conn = DriverManager.getConnection(DB_URL);
@@ -75,7 +80,7 @@ public class DB {
             PreparedStatement ps = conn.prepareCall("insert into enote(username,files_path,files_type) values(?,?,?)");
             ps.setString(1, enote.getUsername());
             ps.setString(2, enote.getFilePath());
-            ps.setString(3, enote.getFilePath());
+            ps.setString(3, enote.getFileType());
             ps.execute();
 
             result = "success";
@@ -85,8 +90,13 @@ public class DB {
         return result;
     }
 
+    /**
+     *
+     * @param username
+     * @return ArrayList<Enote>
+     */
     public static ArrayList<Enote> getEnoteList(String username) {
-        ArrayList <Enote> noteList = new ArrayList<>();
+        ArrayList<Enote> noteList = new ArrayList<>();
         try (CallableStatement cstmt = conn.prepareCall("select * from Enote where username = ?");) {
             cstmt.setString(1, username);
 
@@ -110,6 +120,31 @@ public class DB {
         return noteList;
     }
 
+    /**
+     *
+     * @param username
+     * @param noteID
+     * @return Enote
+     */
+    public static Enote getEnote(String username, Integer noteID) {
+        Enote enote = null;
+        try (PreparedStatement ps = conn.prepareCall("select * from Enote where username = ? and id_note = ?")) {
+            ps.setString(1, username);
+            ps.setInt(2, noteID);
+            ps.execute();
+            ResultSet rs = ps.getResultSet();
+            while (rs.next()) {
+                enote=new Enote( rs.getInt("id_note"),username,rs.getString("files_path"),rs.getString("files_type"));
+            }
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+
+        }
+        return enote;
+    }
+
 
     public static void main(String args[]) {
         String url = "jdbc:sqlserver://localhost:1433;databaseName=Enote;user=sa;password=1;trustServerCertificate=true";
@@ -117,6 +152,6 @@ public class DB {
         //System.out.println(signIn("hoan3232","123"));
 
         //System.out.println(saveEnote(new Enote("hoan3232", "aaaaa", "aaa")));
-        System.out.println(getEnoteList("hoan3232"));
+        System.out.println(DB.getEnote("hoan3232",1));
     }
 }
