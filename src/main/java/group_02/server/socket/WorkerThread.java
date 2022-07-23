@@ -73,20 +73,31 @@ public class WorkerThread extends Thread {
                         ArrayList<Enote> list = getEnoteList(username);
                         ListIterator<Enote> iterate = list.listIterator();
 
+                        dos.writeInt(list.size());
+
                         while(iterate.hasNext()){
-                            file = new File(DB.getEnote(username, iterate.next().getId()).getFilePath());
-                            bytes = new byte[(int) file.length()];
-                            dos.write(bytes);
+                            Enote temp = iterate.next();
+                            dos.writeUTF(temp.getUsername());
+                            dos.writeInt(temp.getId());
+                            dos.writeUTF(temp.getFilePath());
+                            dos.writeUTF(temp.getFileType());
                         }
 
-                        dos.writeUTF("success");
+
+                        //dos.writeUTF("success");
                         break;
                     case "saveNote":
                         username = dis.readUTF();
                         filename = dis.readUTF();
-                        bytes = dis.readAllBytes();
+                        bytes = null;
+                        int length = dis.readInt();
+                        if(length > 0) {
+                            bytes = new byte[length];
+                            dis.readFully(bytes);
+                        }
 
                         FileUtils.writeByteArrayToFile(new File(absPath+filename), bytes);
+
 
                         saveEnote(new Enote(username,absPath+filename,filename.substring(filename.indexOf(".")+1).trim()));
 

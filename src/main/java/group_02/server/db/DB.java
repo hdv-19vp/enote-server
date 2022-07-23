@@ -80,7 +80,7 @@ public class DB {
             PreparedStatement ps = conn.prepareCall("insert into enote(username,files_path,files_type) values(?,?,?)");
             ps.setString(1, enote.getUsername());
             ps.setString(2, enote.getFilePath());
-            ps.setString(3, enote.getFilePath());
+            ps.setString(3, enote.getFileType());
             ps.execute();
 
             result = "success";
