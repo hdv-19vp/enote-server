@@ -6,6 +6,7 @@ import org.apache.commons.io.*;
 
 import java.io.*;
 import java.net.Socket;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.ListIterator;
 
@@ -37,10 +38,10 @@ public class WorkerThread extends Thread {
                 File file;
                 byte[] bytes;
                 int noteId;
-                Enote note;
                 String absPath = "D:\\MMT\\file\\";
 
-
+                String url = "jdbc:sqlserver://localhost:1433;databaseName=Enote;user=sa;password=1;trustServerCertificate=true";
+                Connection conn = connectDB(url);
                 switch (flag) {
                     case "signIn":
                         username = dis.readUTF();
@@ -77,8 +78,10 @@ public class WorkerThread extends Thread {
                             bytes = new byte[(int) file.length()];
                             dos.write(bytes);
                         }
+
+                        dos.writeUTF("success");
                         break;
-                    case "uploadNote":
+                    case "saveNote":
                         username = dis.readUTF();
                         filename = dis.readUTF();
                         bytes = dis.readAllBytes();
@@ -87,6 +90,7 @@ public class WorkerThread extends Thread {
 
                         saveEnote(new Enote(username,absPath+filename,filename.substring(filename.indexOf(".")+1).trim()));
 
+                        dos.writeUTF("success");
                         break;
 
                 }
