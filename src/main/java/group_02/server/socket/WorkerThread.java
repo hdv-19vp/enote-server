@@ -6,6 +6,7 @@ import org.apache.commons.io.*;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.ListIterator;
@@ -63,9 +64,14 @@ public class WorkerThread extends Thread {
                     case "getNote":
                         username = dis.readUTF();
                         noteId = dis.readInt();
-                        file = new File(DB.getEnote(username, noteId).getFilePath());
-                        bytes = new byte[(int) file.length()];
+                        Enote note = DB.getEnote(username, noteId);
+                        file = new File(note.getFilePath());
+                        bytes = Files.readAllBytes(file.toPath());
+                        dos.writeInt(bytes.length);
                         dos.write(bytes);
+                        dos.writeUTF(note.getFilePath());
+
+                        dos.writeUTF("success");
                         break;
 
                     case "getNoteList":
