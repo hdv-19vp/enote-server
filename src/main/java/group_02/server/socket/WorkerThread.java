@@ -102,10 +102,10 @@ public class WorkerThread extends Thread {
                             dis.readFully(bytes);
                         }
 
-                        FileUtils.writeByteArrayToFile(new File(absPath+filename), bytes);
+                        FileUtils.writeByteArrayToFile(new File(absPath+username + "\\" +filename), bytes);
 
 
-                        saveEnote(new Enote(username,absPath+filename,filename.substring(filename.indexOf(".")+1).trim()));
+                        saveEnote(new Enote(username,absPath+username + "\\" +filename,filename.substring(filename.indexOf(".")+1).trim()));
 
                         dos.writeUTF("success");
                         break;
