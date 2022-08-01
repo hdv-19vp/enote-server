@@ -18,9 +18,6 @@ public class DB {
             conn = DriverManager.getConnection(DB_URL);
         } catch (SQLException e) {
         }
-        if (conn != null) {
-            System.out.println("Connected");
-        }
         return conn;
     }
 
